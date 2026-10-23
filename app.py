@@ -1,17 +1,8 @@
 import inspect
-
 import re
-
 from typing import Any
-
-
-
 import streamlit as st
-
 import pymupdf
-
-
-
 from modules.chatbot import get_career_response
 
 from modules.learning_roadmap import generate_learning_roadmap
@@ -381,6 +372,34 @@ st.markdown(
         background-color: #111A2E !important;
         color: #F3F5FA !important;
     }
+    
+/* Make AI mentor responses readable in dark mode */
+[data-testid="stChatMessage"] {
+    background-color: #111A2E !important;
+    color: #F3F5FA !important;
+    border: 1px solid #34415D !important;
+}
+
+[data-testid="stChatMessage"] p,
+[data-testid="stChatMessage"] li,
+[data-testid="stChatMessage"] h1,
+[data-testid="stChatMessage"] h2,
+[data-testid="stChatMessage"] h3,
+[data-testid="stChatMessage"] h4,
+[data-testid="stChatMessage"] strong,
+[data-testid="stChatMessage"] em,
+[data-testid="stChatMessage"] span,
+[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] * {
+    color: #F3F5FA !important;
+    -webkit-text-fill-color: #F3F5FA !important;
+    opacity: 1 !important;
+}
+
+[data-testid="stChatMessage"] a {
+    color: #93C5FD !important;
+    -webkit-text-fill-color: #93C5FD !important;
+}
+
 
     </style>
 
@@ -392,58 +411,65 @@ st.markdown(
 
 
 
-
-
-def render_score_ring(score: Any, label: str = "CAREER READINESS") -> None:
-
-    """Render a circular career-readiness gauge."""
+def render_score_ring(score, label="CAREER READINESS"):
+    """Display a circular percentage indicator."""
+    import math
+    import html
 
     try:
+        score = float(score)
+        if not math.isfinite(score):
+            score = 0
+        score = max(0, min(100, score))
+    except (TypeError, ValueError, OverflowError):
+        score = 0
 
-        value = max(0, min(100, int(round(float(score)))) )
-
-    except (TypeError, ValueError):
-
-        value = 0
-
-    radius = 42
-
-    circumference = 2 * 3.141592653589793 * radius
-
-    offset = circumference * (1 - value / 100)
-
-    stroke = "#34D399" if value >= 80 else ("#FBBF24" if value >= 60 else "#FB7185")
+    percent = int(round(score))
+    circumference = 2 * math.pi * 43
+    offset = circumference * (1 - score / 100)
+    safe_label = html.escape(str(label))
 
     st.markdown(
-
         f"""
-
-        <div class="score-ring-wrap"><div>
-
-          <svg width="124" height="124" viewBox="0 0 124 124" role="img" aria-label="{value} percent {label.lower()}">
-
-            <circle cx="62" cy="62" r="{radius}" fill="none" stroke="#29344A" stroke-width="9" />
-
-            <circle cx="62" cy="62" r="{radius}" fill="none" stroke="{stroke}" stroke-width="9" stroke-linecap="round" stroke-dasharray="{circumference:.2f}" stroke-dashoffset="{offset:.2f}" transform="rotate(-90 62 62)" />
-
-            <text x="62" y="59" text-anchor="middle" font-size="27" font-weight="800" fill="#F3F5FA">{value}</text>
-
-            <text x="62" y="78" text-anchor="middle" font-size="10" fill="#AAB4C8">/ 100</text>
-
+        <div style="
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            padding:12px 6px 18px;
+            text-align:center;
+        ">
+          <svg width="132" height="132" viewBox="0 0 120 120"
+               role="img" aria-label="{safe_label}: {percent}%">
+            <circle cx="60" cy="60" r="43"
+                    fill="none"
+                    stroke="#29344A"
+                    stroke-width="10"/>
+            <circle cx="60" cy="60" r="43"
+                    fill="none"
+                    stroke="#38BDF8"
+                    stroke-width="10"
+                    stroke-linecap="round"
+                    stroke-dasharray="{circumference:.2f}"
+                    stroke-dashoffset="{offset:.2f}"
+                    transform="rotate(-90 60 60)"/>
+            <text x="60" y="67"
+                  text-anchor="middle"
+                  fill="#F3F5FA"
+                  font-size="25"
+                  font-weight="700">{percent}%</text>
           </svg>
-
-          <div class="score-label">{label}</div>
-
-        </div></div>
-
+          <div style="
+              color:#AAB4C8;
+              font-size:12px;
+              font-weight:700;
+              letter-spacing:0.8px;
+              margin-top:4px;
+          ">{safe_label}</div>
+        </div>
         """,
-
         unsafe_allow_html=True,
-
     )
-
-
-
 
 
 def safe_split(value: Any) -> list[str]:
@@ -908,184 +934,170 @@ if submitted:
 
 
 
-
 # --------------------------------------------------
-
 # 6. Career recommendations and readiness
-
 # --------------------------------------------------
 
 results = st.session_state.get("career_results", [])
-
 student_skills = st.session_state.get("student_skills", [])
-
 student_interests = st.session_state.get("student_interests", [])
-
 student_education = st.session_state.get("student_education", "")
-
 student_name = st.session_state.get("student_name", "")
 
-
-
 if results:
-
-    st.markdown('<div id="career-recommendations"></div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div id="career-recommendations"></div>',
+        unsafe_allow_html=True,
+    )
 
     st.header(f"🎯 {student_name or 'Your'} Career Recommendations")
-
-    st.caption("Explore the strongest matches first. Scores are guidance indicators, not guarantees of placement or employment.")
+    st.caption(
+        "Explore the strongest matches first. Scores are guidance indicators, "
+        "not guarantees of placement or employment."
+    )
 
     for index, result in enumerate(results, start=1):
-
         if not isinstance(result, dict):
-
             try:
-
                 result = dict(result)
-
             except Exception:
-
                 result = {"career": str(result)}
 
-        career_name = str(result.get("career", result.get("career_name", result.get("role", "Career option"))))
-
+        career_name = str(
+            result.get(
+                "career",
+                result.get(
+                    "career_name",
+                    result.get("role", "Career option"),
+                ),
+            )
+        )
         domain = str(result.get("domain", "Career pathway"))
 
-        match_score = result.get("match_score", result.get("score", result.get("career_score", result.get("match_percentage", None))))
+        match_score = result.get(
+            "match_score",
+            result.get(
+                "score",
+                result.get(
+                    "career_score",
+                    result.get("match_percentage"),
+                ),
+            ),
+        )
+        interest_score = result.get("interest_score")
 
-        interest_score = result.get("interest_score", None)
-
-        education_score = result.get("education_score", None)
-
+        # One separate card for each career.
         with st.container(border=True):
+            st.subheader(f"{index}. {career_name}")
+            st.caption(domain)
 
-            title_col, score_col = st.columns([4, 1], vertical_alignment="center")
-
-            with title_col:
-
-                st.subheader(f"{index}. {career_name}")
-
-                st.caption(domain)
-
-            with score_col:
-
-                if match_score is not None:
-
-                    try:
-
-                        st.metric("Match score", f"{float(match_score):.0f}%")
-
-                    except (TypeError, ValueError):
-
-                        st.metric("Match score", str(match_score))
-
-                else:
-
-                    st.metric("Recommendation", f"#{index}")
-
-            if interest_score is not None or education_score is not None:
-
-                left, right = st.columns(2)
-
-                if interest_score is not None:
-
-                    left.write(f"**Interest coverage:** {interest_score}%")
-
-                if education_score is not None:
-
-                    right.write(f"**Education match:** {education_score}%")
-
+            # Calculate career readiness only once.
             readiness = get_readiness(student_skills, career_name)
 
-            if readiness:
-
-                readiness_value = readiness.get("readiness_score", readiness.get("score", 0))
+            if isinstance(readiness, dict) and readiness:
+                readiness_value = readiness.get(
+                    "readiness_score",
+                    readiness.get("score", 0),
+                )
 
                 matched_skills = readiness.get("matched_skills", []) or []
-
                 missing_skills = readiness.get("missing_skills", []) or []
 
-                matched_count = readiness.get("total_matched_skills", len(matched_skills))
-
-                total_count = readiness.get("total_required_skills", len(matched_skills) + len(missing_skills))
-
-                readiness_col, detail_col = st.columns([1, 2], vertical_alignment="center")
-
-                with readiness_col:
-
-                    render_score_ring(readiness_value, "CAREER READINESS")
-
-                with detail_col:
-
-                    st.markdown("**Your readiness at a glance**")
-
-                    st.write(f"You currently match **{matched_count}** of **{total_count}** required skills for this role.")
-
-                    try:
-
-                        st.progress(max(0.0, min(1.0, float(readiness_value) / 100)))
-
-                    except (TypeError, ValueError):
-
-                        pass
-
-                matched_col, missing_col = st.columns(2)
-
-                with matched_col:
-
-                    st.markdown("**Skills you already have**")
-
-                    st.write(", ".join(str(s).title() for s in matched_skills) if matched_skills else "No direct skill matches yet.")
-
-                with missing_col:
-
-                    st.markdown("**Skills to learn next**")
-
-                    st.write(", ".join(str(s).title() for s in missing_skills) if missing_skills else "All listed skills in this career profile are covered.")
-
+                matched_count = readiness.get(
+                    "total_matched_skills",
+                    len(matched_skills),
+                )
+                total_count = readiness.get(
+                    "total_required_skills",
+                    len(matched_skills) + len(missing_skills),
+                )
             else:
-
                 required = get_required_skills(careers_df, career_name)
-
                 student_set = normalized_set(student_skills)
 
-                missing = [s for s in required if s.lower() not in student_set]
+                matched_skills = [
+                    skill for skill in required
+                    if skill.strip().lower() in student_set
+                ]
+                missing_skills = [
+                    skill for skill in required
+                    if skill.strip().lower() not in student_set
+                ]
 
-                matched = [s for s in required if s.lower() in student_set]
+                matched_count = len(matched_skills)
+                total_count = len(required)
 
-                score = round(len(matched) * 100 / len(required)) if required else 0
+                readiness_value = (
+                    round(matched_count * 100 / total_count)
+                    if total_count else 0
+                )
 
-                readiness_col, detail_col = st.columns([1, 2], vertical_alignment="center")
+            # Keep all three circular graphs in one row.
+            score_col1, score_col2, score_col3 = st.columns(3)
 
-                with readiness_col:
+            with score_col1:
+                if match_score is not None:
+                    render_score_ring(match_score, "MATCH SCORE")
+                else:
+                    st.caption("Match score unavailable")
 
-                    render_score_ring(score, "CAREER READINESS")
+            with score_col2:
+                if interest_score is not None:
+                    render_score_ring(
+                        interest_score,
+                        "INTEREST COVERAGE",
+                    )
+                else:
+                    st.caption("Interest score unavailable")
 
-                with detail_col:
+            with score_col3:
+                try:
+                    readiness_value = float(readiness_value)
+                    if not (
+                        readiness_value == readiness_value
+                        and abs(readiness_value) != float("inf")
+                    ):
+                        readiness_value = 0
+                    readiness_value = max(
+                        0, min(100, readiness_value)
+                    )
+                except (TypeError, ValueError, OverflowError):
+                    readiness_value = 0
 
-                    st.markdown("**Your readiness at a glance**")
+                render_score_ring(
+                    readiness_value,
+                    "CAREER READINESS",
+                )
 
-                    st.write(f"You currently match **{len(matched)}** of **{len(required)}** skills listed for this role.")
+            st.markdown("---")
 
-                    st.progress(score / 100 if required else 0.0)
+            st.write(
+                f"You currently match **{matched_count} of {total_count}** "
+                "required skills for this role."
+            )
 
+            with st.expander("View skills and readiness details"):
                 matched_col, missing_col = st.columns(2)
 
                 with matched_col:
+                    st.markdown("**✅ Skills you already have**")
 
-                    st.markdown("**Skills you already have**")
-
-                    st.write(", ".join(s.title() for s in matched) if matched else "No direct skill matches yet.")
+                    if matched_skills:
+                        for skill in matched_skills:
+                            st.markdown(f"- {str(skill).title()}")
+                    else:
+                        st.write("No direct skill matches yet.")
 
                 with missing_col:
+                    st.markdown("**📌 Skills to learn next**")
 
-                    st.markdown("**Skills to learn next**")
-
-                    st.write(", ".join(s.title() for s in missing) if missing else "No listed skill gaps found.")
-
-
-
-
+                    if missing_skills:
+                        for skill in missing_skills:
+                            st.markdown(f"- {str(skill).title()}")
+                    else:
+                        st.success(
+                            "All listed skills for this career are covered."
+                        )
 
 # --------------------------------------------------
 
