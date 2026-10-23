@@ -1379,11 +1379,161 @@ if resume_analysis:
 
 
 
+# --------------------------------------------------
+# 9. Dedicated Skill Gap Analysis
+# --------------------------------------------------
+
+st.markdown('<div id="skill-gap-analysis"></div>', unsafe_allow_html=True)
+
+st.header("🧩 Skill Gap Analysis")
+
+st.write(
+    "Analyze your current skills against your target career, "
+    "identify missing skills, and get personalized learning recommendations."
+)
+
+# Select target career independently of the other sections.
+available_gap_careers = careers_df["career"].dropna().astype(str).unique().tolist()
+
+if available_gap_careers:
+    recommended_gap_careers = [
+        str(item.get("career", item.get("career_name", item.get("role", ""))))
+        for item in results
+        if isinstance(item, dict)
+    ]
+
+    gap_default_options = [
+        career for career in recommended_gap_careers
+        if career in available_gap_careers
+    ]
+
+    gap_career_options = gap_default_options or available_gap_careers
+
+    selected_gap_career = st.selectbox(
+        "Choose your target career",
+        options=gap_career_options,
+        key="dedicated_gap_career",
+    )
+
+    # Choose the source of skills for this separate analysis.
+    has_resume_analysis = bool(st.session_state.get("resume_analysis"))
+
+    skill_sources = ["Student Profile"]
+    if has_resume_analysis:
+        skill_sources.append("Uploaded Resume")
+
+    selected_skill_source = st.radio(
+        "Analyze skills from",
+        options=skill_sources,
+        horizontal=True,
+        key="dedicated_gap_source",
+    )
+
+    if selected_skill_source == "Uploaded Resume":
+        resume_data = st.session_state.get("resume_analysis", {})
+
+        if resume_data.get("career") == selected_gap_career:
+            analysis_skills = resume_data.get("detected_skills", [])
+        else:
+            st.info(
+                "Your saved resume analysis targets a different career. "
+                "Upload and analyze your resume for this career in the "
+                "Resume Analyzer section first."
+            )
+            analysis_skills = []
+    else:
+        analysis_skills = st.session_state.get("student_skills", [])
+
+    required_gap_skills = get_required_skills(
+        careers_df, selected_gap_career
+    )
+
+    current_skill_set = normalized_set(analysis_skills)
+
+    matched_gap_skills = [
+        skill for skill in required_gap_skills
+        if skill.strip().lower() in current_skill_set
+    ]
+
+    missing_gap_skills = [
+        skill for skill in required_gap_skills
+        if skill.strip().lower() not in current_skill_set
+    ]
+
+    gap_percentage = (
+        round(len(matched_gap_skills) * 100 / len(required_gap_skills))
+        if required_gap_skills else 0
+    )
+
+    st.markdown("---")
+
+    if not analysis_skills:
+        st.warning(
+            "No skills are available for this analysis. "
+            "Complete your Student Profile or analyze a resume first."
+        )
+
+    if not required_gap_skills:
+        st.warning(
+            "No required skills were found for this career in the dataset."
+        )
+    else:
+        metric1, metric2, metric3 = st.columns(3)
+
+        metric1.metric(
+            "Matched Skills",
+            len(matched_gap_skills),
+        )
+        metric2.metric(
+            "Missing Skills",
+            len(missing_gap_skills),
+        )
+        metric3.metric(
+            "Skill Match",
+            f"{gap_percentage}%",
+        )
+
+        st.progress(gap_percentage / 100)
+
+        st.caption(
+            f"You match {len(matched_gap_skills)} of "
+            f"{len(required_gap_skills)} required skills for "
+            f"{selected_gap_career}."
+        )
+
+        matched_col, missing_col = st.columns(2)
+
+        with matched_col:
+            st.subheader("✅ Skills You Have")
+
+            if matched_gap_skills:
+                for skill in matched_gap_skills:
+                    st.markdown(f"- {skill.title()}")
+            else:
+                st.info("No matching skills found yet.")
+
+        with missing_col:
+            st.subheader("📌 Skills to Develop")
+
+            if missing_gap_skills:
+                for skill in missing_gap_skills:
+                    st.markdown(f"- {skill.title()}")
+            else:
+                st.success("You match all the listed required skills!")
+
+        st.markdown("---")
+
+else:
+    st.warning("No careers are available in the career dataset.")
 
 
 # --------------------------------------------------
+# Keep the existing AI Career Mentor section below
+# --------------------------------------------------
 
-# 9. Personalized AI career mentor
+# --------------------------------------------------
+
+# 10. Personalized AI career mentor
 
 # --------------------------------------------------
 
@@ -1530,22 +1680,14 @@ if prompt:
         st.markdown(answer)
 
     st.session_state["chat_history"].append({"role": "assistant", "content": answer})
-
-
-
 if st.button("🗑️ Clear Chat", key="clear_career_chat"):
 
     st.session_state["chat_history"] = []
 
     st.rerun()
-
-
-
-
-
 # --------------------------------------------------
 
-# 10. Footer
+# 11. Footer
 
 # --------------------------------------------------
 
