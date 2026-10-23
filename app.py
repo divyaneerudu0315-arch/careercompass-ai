@@ -1,7 +1,6 @@
 import inspect
 
 import re
-from textwrap import dedent
 
 from typing import Any
 
@@ -175,54 +174,13 @@ st.markdown(
 
     [data-testid="stMetricValue"] { color:var(--cc-text) !important; }
 
-    /* Student profile inputs: readable dark theme */
-    [data-testid="stTextInput"] input,
-    [data-testid="stTextArea"] textarea {
-        background-color: #111A2E !important;
-        color: #F3F5FA !important;
-        -webkit-text-fill-color: #F3F5FA !important;
-        caret-color: #A78BFA !important;
-        border: 1px solid #475569 !important;
-        border-radius: 10px !important;
-        opacity: 1 !important;
-    }
+    [data-baseweb="input"] > div, [data-baseweb="textarea"] > div,
 
-    [data-testid="stTextInput"] input::placeholder,
-    [data-testid="stTextArea"] textarea::placeholder {
-        color: #AAB4C8 !important;
-        -webkit-text-fill-color: #AAB4C8 !important;
-        opacity: 1 !important;
-    }
+    [data-baseweb="select"] > div { background:#111A2E !important; border-color:#34415D !important; color:#F3F5FA !important; border-radius:10px !important; }
 
-    [data-testid="stTextInput"] [data-baseweb="input"] > div,
-    [data-testid="stTextArea"] [data-baseweb="textarea"] > div,
-    [data-testid="stSelectbox"] [data-baseweb="select"] > div,
-    [data-testid="stMultiSelect"] [data-baseweb="select"] > div {
-        background-color: #111A2E !important;
-        border-color: #475569 !important;
-        border-radius: 10px !important;
-    }
+    input, textarea { color:#F3F5FA !important; -webkit-text-fill-color:#F3F5FA !important; }
 
-    [data-testid="stSelectbox"] *,
-    [data-testid="stMultiSelect"] * {
-        color: #F3F5FA !important;
-    }
-
-    [data-baseweb="popover"] [role="option"] {
-        background-color: #111A2E !important;
-        color: #F3F5FA !important;
-    }
-
-    [data-baseweb="popover"] [role="option"]:hover {
-        background-color: #253454 !important;
-        color: #FFFFFF !important;
-    }
-
-    [data-testid="stTextInput"] input:focus,
-    [data-testid="stTextArea"] textarea:focus {
-        border-color: #8B5CF6 !important;
-        box-shadow: 0 0 0 1px #8B5CF6 !important;
-    }
+    [data-baseweb="select"] * { color:#F3F5FA !important; }
 
     /* Premium dark resume uploader */
     [data-testid="stFileUploader"] {
@@ -380,45 +338,55 @@ st.markdown(
 
     @media(max-width:768px) { .block-container { padding:1rem .8rem 2rem; } .cc-topbar { align-items:flex-start; flex-direction:column; } .cc-title { font-size:1.65rem; } }
 
-/* Improve readability of AI Career Mentor responses */
-[data-testid="stChatMessage"] {
-    background: #111A2E !important;
-    color: #F3F5FA !important;
-}
 
-[data-testid="stChatMessage"] h1,
-[data-testid="stChatMessage"] h2,
-[data-testid="stChatMessage"] h3,
-[data-testid="stChatMessage"] p,
-[data-testid="stChatMessage"] li,
-[data-testid="stChatMessage"] strong {
-    color: #F3F5FA !important;
-}
-
-/* Make chatbot tables readable */
-[data-testid="stChatMessage"] table {
-    background: #111A2E !important;
-    color: #F3F5FA !important;
-    border-color: #34415D !important;
-}
-
-[data-testid="stChatMessage"] th {
-    background: #1B2740 !important;
-    color: #FFFFFF !important;
-}
-
-[data-testid="stChatMessage"] td {
-    background: #111A2E !important;
-    color: #DCE4F5 !important;
-    border-color: #34415D !important;
-}
-
-/* Improve table borders and readability */
-[data-testid="stChatMessage"] th,
-[data-testid="stChatMessage"] td {
-    border: 1px solid #34415D !important;
-    padding: 10px !important;
-}
+    /* FIX: readable dark Education, Skills and Interests controls */
+    [data-testid="stSelectbox"] [data-baseweb="select"] > div,
+    [data-testid="stMultiSelect"] [data-baseweb="select"] > div {
+        background-color: #111A2E !important;
+        border: 1px solid #536581 !important;
+        border-radius: 10px !important;
+        opacity: 1 !important;
+    }
+    [data-testid="stSelectbox"] [data-baseweb="select"] *,
+    [data-testid="stMultiSelect"] [data-baseweb="select"] * {
+        color: #F3F5FA !important;
+        -webkit-text-fill-color: #F3F5FA !important;
+        opacity: 1 !important;
+    }
+    [data-testid="stSelectbox"] svg,
+    [data-testid="stMultiSelect"] svg {
+        fill: #F3F5FA !important;
+        color: #F3F5FA !important;
+    }
+    [data-baseweb="popover"], [data-baseweb="menu"],
+    [role="listbox"] {
+        background-color: #111A2E !important;
+        color: #F3F5FA !important;
+    }
+    [data-baseweb="popover"] [role="option"],
+    [role="option"] {
+        background-color: #111A2E !important;
+        color: #F3F5FA !important;
+        -webkit-text-fill-color: #F3F5FA !important;
+    }
+    [data-baseweb="popover"] [role="option"]:hover,
+    [role="option"][aria-selected="true"] {
+        background-color: #253454 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+    }
+    [data-testid="stMultiSelect"] [data-baseweb="tag"] {
+        background-color: #26365A !important;
+        border: 1px solid #536581 !important;
+    }
+    [data-testid="stMultiSelect"] [data-baseweb="tag"] * {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+    }
+    [data-testid="stSelectbox"] label,
+    [data-testid="stMultiSelect"] label {
+        color: #F3F5FA !important;
+    }
 
     </style>
 
@@ -452,17 +420,33 @@ def render_score_ring(score: Any, label: str = "CAREER READINESS") -> None:
 
     stroke = "#34D399" if value >= 80 else ("#FBBF24" if value >= 60 else "#FB7185")
 
-    score_ring_html = dedent(f"""        <div class="score-ring-wrap"><div>
+    st.markdown(
+
+        f"""
+
+        <div class="score-ring-wrap"><div>
+
           <svg width="124" height="124" viewBox="0 0 124 124" role="img" aria-label="{value} percent {label.lower()}">
+
             <circle cx="62" cy="62" r="{radius}" fill="none" stroke="#29344A" stroke-width="9" />
+
             <circle cx="62" cy="62" r="{radius}" fill="none" stroke="{stroke}" stroke-width="9" stroke-linecap="round" stroke-dasharray="{circumference:.2f}" stroke-dashoffset="{offset:.2f}" transform="rotate(-90 62 62)" />
+
             <text x="62" y="59" text-anchor="middle" font-size="27" font-weight="800" fill="#F3F5FA">{value}</text>
+
             <text x="62" y="78" text-anchor="middle" font-size="10" fill="#AAB4C8">/ 100</text>
+
           </svg>
+
           <div class="score-label">{label}</div>
+
         </div></div>
-    """)
-    st.markdown(score_ring_html, unsafe_allow_html=True)
+
+        """,
+
+        unsafe_allow_html=True,
+
+    )
 
 
 
