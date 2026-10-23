@@ -175,13 +175,54 @@ st.markdown(
 
     [data-testid="stMetricValue"] { color:var(--cc-text) !important; }
 
-    [data-baseweb="input"] > div, [data-baseweb="textarea"] > div,
+    /* Student profile inputs: readable dark theme */
+    [data-testid="stTextInput"] input,
+    [data-testid="stTextArea"] textarea {
+        background-color: #111A2E !important;
+        color: #F3F5FA !important;
+        -webkit-text-fill-color: #F3F5FA !important;
+        caret-color: #A78BFA !important;
+        border: 1px solid #475569 !important;
+        border-radius: 10px !important;
+        opacity: 1 !important;
+    }
 
-    [data-baseweb="select"] > div { background:#111A2E !important; border-color:#34415D !important; color:#F3F5FA !important; border-radius:10px !important; }
+    [data-testid="stTextInput"] input::placeholder,
+    [data-testid="stTextArea"] textarea::placeholder {
+        color: #AAB4C8 !important;
+        -webkit-text-fill-color: #AAB4C8 !important;
+        opacity: 1 !important;
+    }
 
-    input, textarea { color:#F3F5FA !important; -webkit-text-fill-color:#F3F5FA !important; }
+    [data-testid="stTextInput"] [data-baseweb="input"] > div,
+    [data-testid="stTextArea"] [data-baseweb="textarea"] > div,
+    [data-testid="stSelectbox"] [data-baseweb="select"] > div,
+    [data-testid="stMultiSelect"] [data-baseweb="select"] > div {
+        background-color: #111A2E !important;
+        border-color: #475569 !important;
+        border-radius: 10px !important;
+    }
 
-    [data-baseweb="select"] * { color:#F3F5FA !important; }
+    [data-testid="stSelectbox"] *,
+    [data-testid="stMultiSelect"] * {
+        color: #F3F5FA !important;
+    }
+
+    [data-baseweb="popover"] [role="option"] {
+        background-color: #111A2E !important;
+        color: #F3F5FA !important;
+    }
+
+    [data-baseweb="popover"] [role="option"]:hover {
+        background-color: #253454 !important;
+        color: #FFFFFF !important;
+    }
+
+    [data-testid="stTextInput"] input:focus,
+    [data-testid="stTextArea"] textarea:focus {
+        border-color: #8B5CF6 !important;
+        box-shadow: 0 0 0 1px #8B5CF6 !important;
+    }
 
     /* Premium dark resume uploader */
     [data-testid="stFileUploader"] {
